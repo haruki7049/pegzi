@@ -489,8 +489,9 @@ pub const Parser = struct {
     }
 
     pub fn peek(p: *Parser, idx: u2) Token {
-        if (idx >= p.peeks.buffer.len)
+        if (idx >= p.peeks.buffer.len) {
             panicf("internal error in peek() index '{}' out of range", .{idx});
+        }
         return if (idx < p.peeks.len) p.peeks.get(idx) else blk: {
             var i: usize = @intCast(p.peeks.len);
             while (i <= idx) : (i += 1) {
