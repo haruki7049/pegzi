@@ -26,6 +26,9 @@ pub fn Gen(comptime Grammar: type, comptime Node: type) type {
                 .group => |group| try @call(.always_tail, genImpl, .{ g, group.payload.*, writer, errwriter, rand }),
                 .dot => @panic("TODO dot"),
                 .char_set => @panic("TODO char_set"),
+                .action => @panic("TODO action"),
+                .begin => @panic("TODO begin"),
+                .end => @panic("TODO end"),
             }
         }
     };

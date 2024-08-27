@@ -159,7 +159,7 @@ pub const Node = union(enum) {
     }
 
     pub fn isAtom(n: Node) bool {
-        return @enumToInt(@as(Tag, n)) <= @enumToInt(@as(Tag, .group));
+        return @intFromEnum(@as(Tag, n)) <= @intFromEnum(@as(Tag, .group));
     }
 };
 
@@ -211,8 +211,8 @@ pub const Parser = struct {
 
     fn skipWsImpl(p: *Parser) void {
         // this hack necessary because content is []u8 while trimLeft returns []const u8
-        var content = mem.trimLeft(u8, p.content, &std.ascii.whitespace);
-        p.content.ptr = @intToPtr([*]u8, @ptrToInt(content.ptr));
+        const content = mem.trimLeft(u8, p.content, &std.ascii.whitespace);
+        p.content.ptr = @ptrFromInt(@intFromPtr(content.ptr));
         p.content.len = content.len;
     }
 
@@ -228,7 +228,7 @@ pub const Parser = struct {
     fn errFmt(p: Parser, comptime fmt: []const u8, args: anytype) void {
         var line: u32 = 1;
         var col: u32 = 1;
-        const len = @ptrToInt(p.content.ptr) - @ptrToInt(p.content_start.ptr);
+        const len = @intFromPtr(p.content.ptr) - @intFromPtr(p.content_start.ptr);
         for (p.content_start[0..len]) |c| {
             if (c == '\n') {
                 col = 1;
@@ -342,13 +342,13 @@ pub const Parser = struct {
         while (true) {
             const b = p.content[index];
             const endmatch = b == end;
-            depth -= @boolToInt(endmatch);
+            depth -= @intFromBool(endmatch);
             if (endmatch and depth == 0) {
                 defer p.content = p.content[index + 1 ..];
                 return p.content[0..fbs.pos];
             }
             try writer.writeByte(b);
-            depth += @boolToInt(b == start);
+            depth += @intFromBool(b == start);
             index += 1;
         }
     }
@@ -401,14 +401,14 @@ pub const Parser = struct {
 
         pub const Tag = std.meta.Tag(Token);
 
-        const first_atom = @enumToInt(Token.dot);
+        const first_atom = @intFromEnum(Token.dot);
         pub inline fn isAtom(t: Token) bool {
-            return @enumToInt(t) >= first_atom;
+            return @intFromEnum(t) >= first_atom;
         }
 
-        const last_seq_terminator = @enumToInt(Token.opt);
+        const last_seq_terminator = @intFromEnum(Token.opt);
         pub inline fn isEndSeq(t: Token) bool {
-            return @enumToInt(t) <= last_seq_terminator;
+            return @intFromEnum(t) <= last_seq_terminator;
         }
 
         pub fn format(t: Token, comptime _: []const u8, _: std.fmt.FormatOptions, writer: anytype) !void {
@@ -443,7 +443,7 @@ pub const Parser = struct {
 
     fn matchSkipContent(p: *Parser, s: []const u8) bool {
         const match = mem.startsWith(u8, p.content, s);
-        p.content = p.content[s.len * @boolToInt(match) ..];
+        p.content = p.content[s.len * @intFromBool(match) ..];
         return match;
     }
 
@@ -522,7 +522,7 @@ pub const Parser = struct {
         var bytes = bytes_;
         var set: CharSet = .{};
         set.negated = bytes[0] == '^';
-        bytes = bytes[@boolToInt(set.negated)..];
+        bytes = bytes[@intFromBool(set.negated)..];
         var chars_start: usize = 0;
         for (bytes, 0..) |c, i| {
             if (i + 2 < bytes.len and bytes[i + 1] == '-') {
