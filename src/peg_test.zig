@@ -8,7 +8,7 @@ const test_filepath = "<test>";
 inline fn testParserInit(s: anytype) Parser {
     var arr = s.*;
     std.log.debug("\ntestParserInit:\n{s}", .{&arr});
-    var p: Parser = .{
+    const p: Parser = .{
         .content = &arr,
         .content_start = &arr,
         .args = .{ .filepath = test_filepath },

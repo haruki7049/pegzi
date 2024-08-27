@@ -34,7 +34,7 @@ pub const Grammar = struct {
 
     pub fn format(g: Grammar, comptime _: []const u8, _: std.fmt.FormatOptions, writer: anytype) !void {
         const vals = g.rules.values();
-        for (g.rules.keys()) |key, i| {
+        for (g.rules.keys(), 0..) |key, i| {
             try writer.print("{s} <- {}\n", .{ key, vals[i] });
         }
     }
@@ -113,11 +113,11 @@ pub const Node = union(enum) {
             .dstr => |s| try writer.print("\"{}\"", .{std.zig.fmtEscapes(s.payload)}),
             .sstr => |s| try writer.print("'{'}'", .{std.zig.fmtEscapes(s.payload)}),
             .char_set => |s| try writer.print("[{}]", .{std.zig.fmtEscapes(s.payload)}),
-            .seq => |s| for (s.payload.items) |*nn, i| {
+            .seq => |s| for (s.payload.items, 0..) |*nn, i| {
                 if (i != 0) try writer.writeByte(' ');
                 try writer.print("{}", .{nn.*});
             },
-            .alt => |s| for (s.payload.items) |nn, i| {
+            .alt => |s| for (s.payload.items, 0..) |nn, i| {
                 if (i != 0) _ = try writer.write(" / ");
                 try writer.print("{}", .{nn});
             },
@@ -492,7 +492,7 @@ pub const Parser = struct {
         if (idx >= p.peeks.buffer.len)
             panicf("internal error in peek() index '{}' out of range", .{idx});
         return if (idx < p.peeks.len) p.peeks.get(idx) else blk: {
-            var i = @intCast(u2, p.peeks.len);
+            var i: usize = @intCast(p.peeks.len);
             while (i <= idx) : (i += 1) {
                 const t = p.nextToken() catch |e|
                     panicf("internal error in peek(): {s}", .{@errorName(e)});
@@ -524,7 +524,7 @@ pub const Parser = struct {
         set.negated = bytes[0] == '^';
         bytes = bytes[@boolToInt(set.negated)..];
         var chars_start: usize = 0;
-        for (bytes) |c, i| {
+        for (bytes, 0..) |c, i| {
             if (i + 2 < bytes.len and bytes[i + 1] == '-') {
                 // found range
                 if (i > chars_start)
@@ -557,7 +557,7 @@ pub const Parser = struct {
                 break :blk Node.init(.sym, t);
             },
             .lparen => blk: {
-                var node = try p.alloc.create(Node);
+                const node = try p.alloc.create(Node);
                 node.* = try p.parseExpr();
                 _ = try p.expectToken(.rparen);
                 break :blk Node.init(.group, node);
@@ -653,7 +653,7 @@ pub const Parser = struct {
         }
 
         while (true) {
-            var node2 = try p.parseSeq();
+            const node2 = try p.parseSeq();
             try node.alt.payload.append(p.alloc, node2);
             println("parseExpr() 2 node2={}", .{node2});
             if (p.isExprEnd()) break;
@@ -663,7 +663,7 @@ pub const Parser = struct {
 
     fn debugContent(p: *Parser) void {
         print("content:", .{});
-        for (p.peeks.slice()) |pk, i| {
+        for (p.peeks.slice(), 0..) |pk, i| {
             if (i != 0) print(" ", .{});
             print("{}", .{pk});
         }

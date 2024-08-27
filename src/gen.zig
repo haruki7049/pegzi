@@ -3,7 +3,7 @@ const std = @import("std");
 pub fn Gen(comptime Grammar: type, comptime Node: type) type {
     return struct {
         pub fn gen(g: Grammar, start_sym: []const u8, writer: anytype, errwriter: anytype, rand: std.rand.Random) !void {
-            var rule = g.rules.get(start_sym) orelse return error.InvalidStartSymbol;
+            const rule = g.rules.get(start_sym) orelse return error.InvalidStartSymbol;
             try genImpl(g, rule, writer, errwriter, rand);
         }
 
@@ -20,7 +20,7 @@ pub fn Gen(comptime Grammar: type, comptime Node: type) type {
                 .seq => |s| for (s.payload.items) |n|
                     try genImpl(g, n, writer, errwriter, rand),
                 .alt => |s| {
-                    const i = rand.uintLessThan(u32, @intCast(u32, s.payload.items.len));
+                    const i = rand.uintLessThan(u32, @intCast(s.payload.items.len));
                     try @call(.always_tail, genImpl, .{ g, s.payload.items[i], writer, errwriter, rand });
                 },
                 .group => |group| try @call(.always_tail, genImpl, .{ g, group.payload.*, writer, errwriter, rand }),

@@ -18,9 +18,9 @@ pub fn main() !void {
     var arena = std.heap.ArenaAllocator.init(std.heap.page_allocator);
     const alloc = arena.allocator();
 
-    var procargs = try std.process.argsAlloc(alloc);
+    const procargs = try std.process.argsAlloc(alloc);
     if (procargs.len < 3) return usage(procargs[0]);
-    var args: Args = .{
+    const args: Args = .{
         .filepath = procargs[1],
         .start_sym = procargs[2],
     };
