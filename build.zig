@@ -7,7 +7,7 @@ pub fn build(b: *std.Build) void {
 
     // Setup exe
     const exe = b.addExecutable(.{
-        .name = "zhall",
+        .name = "pegzi",
         .root_source_file = b.path("src/main.zig"),
         .target = target,
         .optimize = optimize,
