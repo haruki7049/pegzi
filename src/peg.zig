@@ -495,11 +495,10 @@ pub const Parser = struct {
         return if (idx < p.peeks.len) p.peeks.get(idx) else blk: {
             var i: usize = @intCast(p.peeks.len);
             while (i <= idx) : (i += 1) {
-                const t = p.nextToken() catch |e|
-                    panicf("internal error in peek(): {s}", .{@errorName(e)});
+                const t = p.nextToken() catch |e| panicf("internal error in peek(): {s}", .{@errorName(e)});
                 p.peeks.append(t) catch unreachable;
-                if (i == idx) break :blk p.peeks.buffer[i];
             }
+            break :blk p.peeks.buffer[i];
         };
     }
 
